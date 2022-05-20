@@ -21,4 +21,27 @@ export default NextAuth({
       authorization: {params: {scope: scopes}},
     }),
   ],
+  callbacks: {
+    async jwt({token, account, user}) {
+      // initial sign in
+      if (account && user) {
+        return {
+          accessToken: account.access_token,
+          accessTokenExpires: account.expires_at! * 1000,
+          refreshToken: account.refresh_token,
+          user,
+        }
+      }
+
+      return token
+    },
+    session({session, token}) {
+      // @ts-expect-error
+      session.user = token.user
+      session.accessToken = token.accessToken
+      session.error = token.error
+
+      return session
+    },
+  },
 })
